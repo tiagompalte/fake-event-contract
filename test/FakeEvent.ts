@@ -343,4 +343,67 @@ describe("FakeEvent", function () {
     });
   });
 
+  describe("markTicketAsUsed", function () {
+    it("Should mark a ticket as used", async function () {
+      const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
+      const regularTicket = await fakeEvent.REGULAR_TICKET();
+
+      await fakeEvent.connect(otherAccount).mint(regularTicket, 1, { value: hre.ethers.parseEther("0.05") });
+      await fakeEvent.markTicketAsUsed(otherAccount, regularTicket, 1);
+
+      expect(await fakeEvent.balanceOf(otherAccount, regularTicket)).to.be.equal(0);
+    });
+
+    it("Should revert if the ticket does not exist", async function () {
+      const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
+      const nonExistentTicketId = 9999; // Assuming this ID does not exist
+
+      await expect(fakeEvent.markTicketAsUsed(otherAccount, nonExistentTicketId, 1))
+        .to.be.revertedWith("Invalid ticket ID");
+    });
+
+    it("Should revert if the ticket amount is zero", async function () {
+      const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
+      const regularTicket = await fakeEvent.REGULAR_TICKET();
+
+      await expect(fakeEvent.markTicketAsUsed(otherAccount, regularTicket, 0))
+        .to.be.revertedWith("Quantity must be greater than 0");
+    });
+
+    it("Should revert if the sender is not the owner or the ticket holder", async function () {
+      const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
+      const regularTicket = await fakeEvent.REGULAR_TICKET();
+
+      await fakeEvent.connect(otherAccount).mint(regularTicket, 1, { value: hre.ethers.parseEther("0.05") });
+
+      const anotherAccount = await hre.ethers.provider.getSigner(2); // Get another account
+
+      await expect(fakeEvent.connect(anotherAccount).markTicketAsUsed(otherAccount.address, regularTicket, 1))
+        .to.be.revertedWithCustomError(fakeEvent, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should revert if the ticket amount exceeds the balance", async function () {
+      const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
+      const regularTicket = await fakeEvent.REGULAR_TICKET();
+
+      await fakeEvent.connect(otherAccount).mint(regularTicket, 1, { value: hre.ethers.parseEther("0.05") });
+
+      await expect(fakeEvent.markTicketAsUsed(otherAccount.address, regularTicket, 2))
+        .to.be.revertedWith("Insufficient balance to mark as used");
+    });
+
+  });
+
+  describe("getTokenPrices", function () {
+    it("Should return the correct prices for all ticket types", async function () {
+      const { fakeEvent } = await loadFixture(deployFakeEventFixture);
+
+      const prices = await fakeEvent.getTokenPrices();
+      expect(prices.length).to.equal(3); // Assuming there are 3 ticket types
+      expect(prices[0]).to.equal(hre.ethers.parseEther("0.15")); // VIP ticket price
+      expect(prices[1]).to.equal(hre.ethers.parseEther("0.1")); // Premium ticket price
+      expect(prices[2]).to.equal(hre.ethers.parseEther("0.05")); // Regular ticket price
+    });
+  });
+
 });

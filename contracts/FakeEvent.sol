@@ -3,19 +3,12 @@
 pragma solidity ^0.8.27;
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC1155Burnable} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import {ERC1155Pausable} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import {ERC1155Supply} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract FakeEvent is
-    ERC1155,
-    Ownable,
-    ERC1155Pausable,
-    ERC1155Burnable,
-    ERC1155Supply
-{
+contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
     // Ticket IDs
     uint256 public constant VIP_TICKET = 0;
     uint256 public constant PREMIUM_TICKET = 1;
@@ -59,6 +52,14 @@ contract FakeEvent is
 
     function setTokenPrice(uint256 id, uint256 price) public onlyOwner {
         tokenPrices[id] = price;
+    }
+
+    function getTokenPrices() public view returns (uint256[] memory) {
+        uint256[] memory prices = new uint256[](3);
+        prices[0] = tokenPrices[VIP_TICKET];
+        prices[1] = tokenPrices[PREMIUM_TICKET];
+        prices[2] = tokenPrices[REGULAR_TICKET];
+        return prices;
     }
 
     function setMaxSupply(uint256 id, uint256 supply) public onlyOwner {
@@ -133,6 +134,25 @@ contract FakeEvent is
         require(requiredValue == msg.value, "Total minting amount is invalid");
 
         _mintBatch(msg.sender, ids, quantities, "");
+    }
+
+    function markTicketAsUsed(
+        address account,
+        uint256 id,
+        uint256 quantity
+    ) external onlyOwner {
+        require(
+            id == VIP_TICKET || id == PREMIUM_TICKET || id == REGULAR_TICKET,
+            "Invalid ticket ID"
+        );
+        require(quantity > 0, "Quantity must be greater than 0");
+        require(account != address(0), "Invalid account address");
+        require(
+            balanceOf(account, id) >= quantity,
+            "Insufficient balance to mark as used"
+        );
+
+        _burn(account, id, quantity);
     }
 
     function withdraw() public payable onlyOwner {

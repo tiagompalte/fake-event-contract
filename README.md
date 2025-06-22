@@ -1,13 +1,40 @@
-# Sample Hardhat Project
+# Fake Event Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+## Project Structure
 
-Try running some of the following tasks:
+- `contracts/`: Contains the Solidity smart contracts.
+- `test/`: JavaScript/TypeScript tests for the contracts.
+- `ignition/modules/`: Hardhat Ignition deployment modules.
+- `hardhat.config.ts`: Hardhat configuration file.
+
+## Requirements
+
+- [Node.js](https://nodejs.org/)
+- [Yarn](https://yarnpkg.com/) or [npm](https://www.npmjs.com/)
+- [Hardhat](https://hardhat.org/)
+
+## Installation
 
 ```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+yarn install
+# or
+npm install
 ```
+
+## Running Tests
+
+```shell
+npm run test
+```
+
+## Compile Contract
+
+```shell
+npm run compile
+```
+
+## Additional Resources
+
+- [Hardhat Documentation](https://hardhat.org/getting-started/)
+- [Solidity Documentation](https://docs.soliditylang.org/)
+- [Ethers.js Documentation](https://docs.ethers.org/)
