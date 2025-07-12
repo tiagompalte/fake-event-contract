@@ -20,6 +20,9 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
     // Maximum supply for each ticket type
     mapping(uint256 => uint256) public maxSupply;
 
+    // Track how many tickets of each type have been used
+    mapping(uint256 => uint256) private tokenUsed;
+
     // Maximum tickets that can be purchased in one transaction
     uint256 public constant MAX_TICKETS_PER_PURCHASE = 10;
 
@@ -36,6 +39,10 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
         maxSupply[VIP_TICKET] = 100;
         maxSupply[PREMIUM_TICKET] = 200;
         maxSupply[REGULAR_TICKET] = 500;
+
+        tokenUsed[VIP_TICKET] = 0;
+        tokenUsed[PREMIUM_TICKET] = 0;
+        tokenUsed[REGULAR_TICKET] = 0;
     }
 
     function setURI(string memory newuri) public onlyOwner {
@@ -54,14 +61,6 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
         tokenPrices[id] = price;
     }
 
-    function getTokenPrices() public view returns (uint256[] memory) {
-        uint256[] memory prices = new uint256[](3);
-        prices[0] = tokenPrices[VIP_TICKET];
-        prices[1] = tokenPrices[PREMIUM_TICKET];
-        prices[2] = tokenPrices[REGULAR_TICKET];
-        return prices;
-    }
-
     function setMaxSupply(uint256 id, uint256 supply) public onlyOwner {
         require(
             supply >= totalSupply(id),
@@ -71,7 +70,7 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
     }
 
     function availableSupply(uint256 id) public view returns (uint256) {
-        return maxSupply[id] - totalSupply(id);
+        return maxSupply[id] - totalSupply(id) - tokenUsed[id];
     }
 
     function uri(uint256 id) public view override returns (string memory) {
@@ -93,7 +92,7 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
         );
         require(quantity > 0, "Quantity must be greater than 0");
         require(
-            totalSupply(id) + quantity <= maxSupply[id],
+            totalSupply(id) + quantity <= maxSupply[id] - tokenUsed[id],
             "Minting is not available for this token"
         );
     }
@@ -152,6 +151,8 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
             "Insufficient balance to mark as used"
         );
 
+        tokenUsed[id] += quantity;
+
         _burn(account, id, quantity);
     }
 
@@ -160,6 +161,10 @@ contract FakeEvent is ERC1155, Ownable, ERC1155Pausable, ERC1155Supply {
             value: address(this).balance
         }("");
         require(success, "Failed to withdraw");
+    }
+
+    function balance() public view onlyOwner returns (uint256) {
+        return address(this).balance;
     }
 
     // The following functions are overrides required by Solidity.

@@ -1,39 +1,28 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig, vars } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import 'hardhat-abi-exporter';
+
+const INFURA_API_KEY = vars.get("INFURA_API_KEY");
+const SEPOLIA_PRIVATE_KEY = vars.get("SEPOLIA_PRIVATE_KEY");
 
 const config: HardhatUserConfig = {
   solidity: "0.8.28",
   networks: {
-    hardhat: {
-      chainId: 31337,
-      allowUnlimitedContractSize: true,
-      initialBaseFeePerGas: 0,
-    },
     localhost: {
+      chainId: 31337,
       url: "http://localhost:8545"
     },
     sepolia: {
-      url: "https://sepolia.infura.io/v3/<key>",
-      accounts: []
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [SEPOLIA_PRIVATE_KEY],
     }
   },
   mocha: {
     timeout: 20000 // Set timeout to 20 seconds
   },
-  gasReporter: {
-    enabled: true,
-    currency: "USD",
-    gasPrice: 20,
-    outputFile: "gas-report.txt",
-    noColors: true,
-    showTimeSpent: true,
-    coinmarketcap: "<your-coinmarketcap-api-key>",
-    token: "ETH"
-  },
   etherscan: {
     apiKey: {
-      sepolia: "<your-etherscan-api-key>"
+      sepolia: vars.get("ETHERSCAN_API_KEY")
     },
     customChains: [
       {

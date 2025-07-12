@@ -13,6 +13,13 @@
 - [Yarn](https://yarnpkg.com/) or [npm](https://www.npmjs.com/)
 - [Hardhat](https://hardhat.org/)
 
+## Environments
+
+- `FAKE_EVENT_URI`: URI from IPFS
+- `INFURA_API_KEY`: API KEY from Infura platform
+- `SEPOLIA_PRIVATE_KEY`: private key from wallet
+- `ETHERSCAN_API_KEY`: API KEY from etherscan
+
 ## Installation
 
 ```shell

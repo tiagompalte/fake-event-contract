@@ -11,6 +11,7 @@
     "compile": "npx hardhat compile",
     "start:local": "npx hardhat node",
     "deploy:local": "npx hardhat run scripts/deploy.ts --network localhost",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.ts --network sepolia",
     "export:abi": "npx hardhat export-abi"
   }
 }

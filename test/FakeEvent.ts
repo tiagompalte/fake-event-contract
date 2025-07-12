@@ -347,11 +347,13 @@ describe("FakeEvent", function () {
     it("Should mark a ticket as used", async function () {
       const { fakeEvent, otherAccount } = await loadFixture(deployFakeEventFixture);
       const regularTicket = await fakeEvent.REGULAR_TICKET();
+      const availableSupply = await fakeEvent.availableSupply(regularTicket);
 
       await fakeEvent.connect(otherAccount).mint(regularTicket, 1, { value: hre.ethers.parseEther("0.05") });
       await fakeEvent.markTicketAsUsed(otherAccount, regularTicket, 1);
 
       expect(await fakeEvent.balanceOf(otherAccount, regularTicket)).to.be.equal(0);
+      expect(await fakeEvent.availableSupply(regularTicket)).to.be.equal(Number(availableSupply) - 1);
     });
 
     it("Should revert if the ticket does not exist", async function () {
@@ -392,18 +394,6 @@ describe("FakeEvent", function () {
         .to.be.revertedWith("Insufficient balance to mark as used");
     });
 
-  });
-
-  describe("getTokenPrices", function () {
-    it("Should return the correct prices for all ticket types", async function () {
-      const { fakeEvent } = await loadFixture(deployFakeEventFixture);
-
-      const prices = await fakeEvent.getTokenPrices();
-      expect(prices.length).to.equal(3); // Assuming there are 3 ticket types
-      expect(prices[0]).to.equal(hre.ethers.parseEther("0.15")); // VIP ticket price
-      expect(prices[1]).to.equal(hre.ethers.parseEther("0.1")); // Premium ticket price
-      expect(prices[2]).to.equal(hre.ethers.parseEther("0.05")); // Regular ticket price
-    });
   });
 
 });
